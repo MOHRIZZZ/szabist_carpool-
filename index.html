@@ -1,0 +1,627 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SZABIST Carpool — Find your ride</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+  :root{
+    --brand:#5B5BF6;
+    --brand-dark:#3E3ED9;
+    --brand-light:#EEF0FF;
+    --pink:#FF5C93;
+    --yellow:#FFC845;
+    --ink:#1F2130;
+    --muted:#6B7080;
+  }
+  * { font-family: 'Inter', sans-serif; }
+  .font-display, h1, h2, h3, h4, h5, h6, .brand-name, .section-title, .btn-brand, .role-chip, .match-name {
+    font-family: 'Sora', sans-serif;
+  }
+  .font-mono, .brand-tag, .pill-badge, .stat-chip, .match-meta, .zone-name, .zone-count,
+  #phoneError, #emailError, #roleError, .popup-meta, #formStatus, label.field-label {
+    font-family: 'JetBrains Mono', monospace;
+  }
+  label.field-label{ text-transform: uppercase; letter-spacing: .04em; font-size: .7rem !important; }
+  body{
+    background:#F7F8FC;
+    color: var(--ink);
+  }
+
+  /* ---------- Header / logo ---------- */
+  .navbar-brandbar{
+    background: #fff;
+    border-bottom: 1px solid #ECEDF5;
+  }
+  .logo-sticker{
+    width: 46px; height: 46px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, var(--brand), var(--pink));
+    display:flex; align-items:center; justify-content:center;
+    font-size: 24px;
+    box-shadow: 0 6px 16px rgba(91,91,246,0.35);
+    transform: rotate(-4deg);
+  }
+  .brand-name{ font-weight:800; letter-spacing:-0.5px; }
+  .brand-tag{ font-size:.72rem; color:var(--muted); font-weight:500; }
+
+  /* ---------- Cards ---------- */
+  .card-soft{
+    border: none;
+    border-radius: 20px;
+    background:#fff;
+    box-shadow: 0 4px 18px rgba(31,33,48,0.06);
+  }
+  .section-title{ font-weight:700; letter-spacing:-.3px; }
+  .pill-badge{
+    font-size:.7rem; font-weight:600; padding:.3rem .65rem; border-radius:999px;
+    background: var(--brand-light); color: var(--brand-dark);
+  }
+
+  /* ---------- Form controls ---------- */
+  .form-control, .form-select{
+    border-radius: 12px;
+    border: 1.5px solid #E4E5F0;
+    padding: .65rem .9rem;
+    font-size: .92rem;
+  }
+  .form-control:focus, .form-select:focus{
+    border-color: var(--brand);
+    box-shadow: 0 0 0 .2rem rgba(91,91,246,.15);
+  }
+  label.field-label{ font-size:.8rem; font-weight:600; color:#3A3C4C; margin-bottom:.35rem; }
+
+  /* Role chips */
+  .role-chip{
+    border: 1.5px solid #E4E5F0;
+    border-radius: 14px;
+    padding: .7rem .5rem;
+    text-align:center;
+    background:#fff;
+    cursor:pointer;
+    transition: all .15s ease;
+    font-weight:600;
+    font-size:.82rem;
+    color:#4A4C5C;
+  }
+  .role-chip .emoji{ font-size:1.3rem; display:block; margin-bottom:.15rem; }
+  .role-chip[data-active="true"]{
+    border-color: var(--brand);
+    background: var(--brand-light);
+    color: var(--brand-dark);
+  }
+
+  /* Toggle */
+  .form-switch .form-check-input{ width: 2.6rem; height: 1.4rem; }
+  .form-switch .form-check-input:checked{ background-color: var(--brand); border-color: var(--brand); }
+
+  /* Buttons */
+  .btn-brand{
+    background: var(--brand);
+    border: none;
+    color: #fff;
+    font-weight:600;
+    border-radius: 12px;
+    padding: .75rem 1rem;
+  }
+  .btn-brand:hover{ background: var(--brand-dark); color:#fff; }
+  .btn-wa{
+    background: #25D366;
+    border:none;
+    color:#fff;
+    font-weight:600;
+    border-radius: 10px;
+    font-size:.8rem;
+    padding:.45rem .8rem;
+    white-space: nowrap;
+  }
+  .btn-wa:hover{ background:#1EBE58; color:#fff; }
+
+  /* ---------- Map ---------- */
+  .map-wrap{
+    border-radius: 18px;
+    padding: .6rem;
+    border: 1px solid #E4E5F0;
+    background:#fff;
+  }
+  #mapCanvas{
+    width: 100%;
+    height: 420px;
+    border-radius: 14px;
+    z-index: 0;
+  }
+
+  .node-avatar{
+    width: 32px; height:32px; border-radius:10px;
+    display:flex; align-items:center; justify-content:center;
+    font-size:.68rem; font-weight:700; color:#fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: transform .15s ease;
+  }
+  .node-avatar:hover{ transform: translateY(-3px) scale(1.08); }
+  .bg-driver{ background: linear-gradient(145deg, var(--yellow), #FF9F45); }
+  .bg-passenger{ background: linear-gradient(145deg, #45B4FF, #3E7BFF); }
+
+  /* Leaflet pin markers */
+  .map-pin{
+    width: 30px; height:30px; border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    border: 2px solid #fff;
+  }
+  .map-pin span{ transform: rotate(45deg); font-size:.62rem; font-weight:700; color:#fff; }
+  .leaflet-popup-content-wrapper{ border-radius: 14px; }
+  .popup-name{ font-weight:700; font-size:.85rem; margin-bottom:2px; }
+  .popup-meta{ font-size:.72rem; color:var(--muted); margin-bottom:6px; }
+
+  /* ---------- Matches ---------- */
+  .match-card{
+    border: 1px solid #ECEDF5;
+    border-radius: 16px;
+    padding: .9rem 1rem;
+    background:#fff;
+    display:flex; align-items:center; justify-content:space-between; gap:.75rem;
+    animation: fadeIn .35s ease both;
+  }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+  .match-name{ font-weight:700; font-size:.9rem; color:var(--ink); }
+  .match-meta{ font-size:.74rem; color:var(--muted); }
+
+  .empty-box{
+    border: 1.5px dashed #D8DAE8;
+    border-radius: 16px;
+    padding: 2.2rem 1rem;
+    text-align:center;
+    color: var(--muted);
+    font-size:.88rem;
+  }
+
+  .invalid-msg{ font-size:.75rem; color:#E5484D; margin-top:.25rem; }
+  .status-msg{ font-size:.8rem; text-align:center; margin-top:.5rem; }
+
+  .stat-chip{ font-size:.75rem; font-weight:600; color:#4A4C5C; }
+</style>
+</head>
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<div class="navbar-brandbar py-3 sticky-top">
+  <div class="container d-flex align-items-center justify-content-between">
+    <div class="d-flex align-items-center gap-3">
+      <div class="logo-sticker">🚕</div>
+      <div>
+        <div class="brand-name" style="font-size:1.15rem; line-height:1;">SZABIST Carpool</div>
+        <div class="brand-tag">Karachi Campus Ride Network</div>
+      </div>
+    </div>
+    <div id="statsBar" class="d-none d-sm-flex align-items-center gap-3"></div>
+  </div>
+</div>
+
+<!-- ===================== MAIN ===================== -->
+<div class="container py-4">
+  <div class="row g-4">
+
+    <!-- ============= LEFT: FORM ============= -->
+    <div class="col-lg-5">
+      <div class="card-soft p-4">
+        <div class="d-flex align-items-center justify-content-between mb-1">
+          <h2 class="section-title h5 mb-0">Create your ride profile</h2>
+          <span class="pill-badge">Fall '26</span>
+        </div>
+        <p class="text-muted small mb-4">Get a student on your route, split the fuel cost, ride safer, save money — together.</p>
+
+        <form id="rideForm" novalidate>
+          <div class="mb-3">
+            <label class="field-label">Full name</label>
+            <input id="fullName" type="text" class="form-control" placeholder="e.g. Ahmed Raza" required>
+          </div>
+
+          <div class="row g-3 mb-1">
+            <div class="col-6">
+              <label class="field-label">WhatsApp number</label>
+              <input id="whatsapp" type="tel" class="form-control" placeholder="0300 1234567" required>
+              <div id="phoneError" class="invalid-msg d-none">Enter a valid Pakistani mobile number.</div>
+            </div>
+            <div class="col-6">
+              <label class="field-label">SZABIST email</label>
+              <input id="email" type="email" class="form-control" placeholder="ahmed.raza@szabist.pk" required>
+              <div id="emailError" class="invalid-msg d-none">Must be a valid @szabist.pk address.</div>
+            </div>
+          </div>
+
+          <div class="mb-3 mt-3">
+            <label class="field-label">I am a</label>
+            <div class="row g-2" id="roleChips">
+              <div class="col-6">
+                <div class="role-chip" data-role="Driver" data-active="false">
+                  <span class="emoji">🚗</span>Driver
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="role-chip" data-role="Passenger" data-active="false">
+                  <span class="emoji">🎒</span>Passenger
+                </div>
+              </div>
+            </div>
+            <div id="roleError" class="invalid-msg d-none">Pick one role.</div>
+          </div>
+
+          <div class="mb-3 d-none" id="vehicleWrap">
+            <label class="field-label">Vehicle type</label>
+            <div class="row g-2">
+              <div class="col-6">
+                <div class="role-chip" data-vehicle="Car" data-active="false">
+                  <span class="emoji">🚗</span>Car
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="role-chip" data-vehicle="Bike" data-active="false">
+                  <span class="emoji">🏍️</span>Bike
+                </div>
+              </div>
+            </div>
+            <div id="vehicleError" class="invalid-msg d-none">Pick your vehicle type.</div>
+          </div>
+
+          <div class="row g-3 mb-3">
+            <div class="col-6">
+              <label class="field-label">Pickup area</label>
+              <select id="area" class="form-select" required>
+                <option value="" disabled selected>Select area</option>
+                <option>Gulshan</option>
+                <option>Nazimabad</option>
+                <option>DHA</option>
+                <option>Clifton</option>
+                <option>Johar</option>
+                <option>North Nazimabad</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="field-label">Gender</label>
+              <select id="gender" class="form-select" required>
+                <option value="" disabled selected>Select</option>
+                <option>Female</option>
+                <option>Male</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label class="field-label">Class time slot</label>
+            <select id="slot" class="form-select" required>
+              <option value="" disabled selected>Select slot</option>
+              <option>8:30 AM - 11:30 AM</option>
+              <option>11:30 AM - 2:30 PM</option>
+              <option>2:30 PM - 5:30 PM</option>
+              <option>5:30 PM - 8:30 PM</option>
+            </select>
+          </div>
+
+          <div class="d-flex align-items-center justify-content-between p-3 mb-3" style="background:#F7F8FC; border-radius:12px;">
+            <div>
+              <div class="fw-semibold" style="font-size:.88rem;">Women-only matching</div>
+              <div class="text-muted" style="font-size:.72rem;">Only show riders/drivers who are female</div>
+            </div>
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" id="womenOnly" role="switch">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-brand w-100">Post & find matches →</button>
+          <div id="formStatus" class="status-msg d-none"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============= RIGHT: MAP + MATCHES ============= -->
+    <div class="col-lg-7">
+
+      <!-- MAP -->
+      <div class="card-soft p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div>
+            <h2 class="section-title h5 mb-0">Live network map</h2>
+            <div class="text-muted small">Karachi · home-area clusters</div>
+          </div>
+          <div class="d-flex gap-3 stat-chip">
+            <span><span class="node-avatar bg-driver" style="width:12px;height:12px;border-radius:4px;display:inline-block;box-shadow:none;"></span> Driver</span>
+            <span><span class="node-avatar bg-passenger" style="width:12px;height:12px;border-radius:4px;display:inline-block;box-shadow:none;"></span> Passenger</span>
+          </div>
+        </div>
+
+        <div class="map-wrap">
+          <div id="mapCanvas"></div>
+        </div>
+        <p class="text-muted mt-2 mb-0" style="font-size:.72rem;">Pins show each person's home area (map data © OpenStreetMap contributors). Tap a pin to see details and connect.</p>
+      </div>
+
+      <!-- MATCHES -->
+      <div class="card-soft p-4">
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <h2 class="section-title h5 mb-0">Available matches</h2>
+          <span id="matchCount" class="pill-badge">—</span>
+        </div>
+        <div id="matchesContainer" class="d-flex flex-column gap-2">
+          <div class="empty-box">Post your profile on the left to see live matches here.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="text-center text-muted mt-4" style="font-size:.72rem;">Prototype build — in-memory data only, resets on refresh.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ===================== "DATABASE" (in-memory state) =====================
+  const AREAS = ["North Nazimabad", "Nazimabad", "Gulshan", "Johar", "Clifton", "DHA"];
+  const ROLE_CLASS = { "Driver": "bg-driver", "Passenger": "bg-passenger" };
+
+  // Approximate real-world coordinates for each Karachi pickup area
+  const AREA_COORDS = {
+    "North Nazimabad": [24.9372, 67.0379],
+    "Nazimabad":       [24.9088, 67.0342],
+    "Gulshan":         [24.9200, 67.0980],
+    "Johar":           [24.9095, 67.1274],
+    "Clifton":         [24.8138, 67.0300],
+    "DHA":             [24.8000, 67.0650]
+  };
+
+  // deterministic small offset so multiple pins in the same area don't stack exactly
+  function seededOffset(seed) {
+    const x = Math.sin(seed * 12.9898) * 43758.5453;
+    return (x - Math.floor(x)) - 0.5; // -0.5..0.5
+  }
+
+  let nextId = 100;
+  const db = [
+    { id: 1, name: "Ayesha Khan",   phone: "923001234561", email: "ayesha.khan@szabist.pk",   role: "Driver",    vehicle: "Car",  area: "Gulshan",   gender: "Female", slot: "8:30 AM - 11:30 AM" },
+    { id: 2, name: "Bilal Ahmed",   phone: "923011234562", email: "bilal.ahmed@szabist.pk",   role: "Passenger", vehicle: null,   area: "Nazimabad", gender: "Male",   slot: "8:30 AM - 11:30 AM" },
+    { id: 3, name: "Hassan Raza",   phone: "923021234563", email: "hassan.raza@szabist.pk",   role: "Driver",    vehicle: "Car",  area: "DHA",       gender: "Male",   slot: "2:30 PM - 5:30 PM" },
+    { id: 4, name: "Sana Malik",    phone: "923031234564", email: "sana.malik@szabist.pk",    role: "Driver",    vehicle: "Bike", area: "Gulshan",   gender: "Female", slot: "8:30 AM - 11:30 AM" },
+    { id: 5, name: "Fatima Sheikh", phone: "923041234565", email: "fatima.sheikh@szabist.pk", role: "Passenger", vehicle: null,   area: "Clifton",   gender: "Female", slot: "2:30 PM - 5:30 PM" },
+    { id: 6, name: "Omar Farooq",   phone: "923051234566", email: "omar.farooq@szabist.pk",   role: "Driver",    vehicle: "Car",  area: "Johar",     gender: "Male",   slot: "11:30 AM - 2:30 PM" },
+  ];
+
+  // ===================== HELPERS =====================
+  function initials(name) {
+    return name.trim().split(/\s+/).slice(0, 2).map(w => w[0]?.toUpperCase() || "").join("");
+  }
+
+  function waLink(user, forName) {
+    const text = encodeURIComponent(
+      `Assalam-o-Alaikum ${user.name.split(" ")[0]}! I found you on SZABIST Carpool — ${forName} here. We're matched for ${user.area} (${user.slot}). Can we set up the ride group?`
+    );
+    return `https://wa.me/${user.phone}?text=${text}`;
+  }
+
+  function compatible(seekerRole, otherRole) {
+    return seekerRole !== otherRole; // Passenger seeks Driver, Driver seeks Passenger
+  }
+
+  function findMatches(user) {
+    return db.filter(u =>
+      u.id !== user.id &&
+      u.area === user.area &&
+      u.slot === user.slot &&
+      compatible(user.role, u.role) &&
+      (!user.womenOnly || u.gender === "Female")
+    );
+  }
+
+  // ===================== RENDER: STATS =====================
+  function renderStats() {
+    const drivers = db.filter(u => u.role === "Driver").length;
+    const passengers = db.filter(u => u.role === "Passenger").length;
+    document.getElementById("statsBar").innerHTML = `
+      <span class="stat-chip">${db.length} active</span>
+      <span class="text-muted">|</span>
+      <span class="stat-chip" style="color:#FF9F45;">${drivers} drivers</span>
+      <span class="stat-chip" style="color:#3E7BFF;">${passengers} passengers</span>
+    `;
+    document.getElementById("statsBar").classList.remove("d-none");
+    document.getElementById("statsBar").classList.add("d-flex");
+  }
+
+  // ===================== RENDER: MAP (real Leaflet map + pins) =====================
+  const ROLE_HEX = { "Driver": "#FF9F45", "Passenger": "#3E7BFF" };
+  const VEHICLE_ICON = { "Car": "🚗", "Bike": "🏍️" };
+
+  const leafletMap = L.map("mapCanvas", { scrollWheelZoom: false }).setView([24.878, 67.045], 11.3);
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    maxZoom: 18
+  }).addTo(leafletMap);
+
+  const pinLayer = L.layerGroup().addTo(leafletMap);
+
+  function renderMap() {
+    pinLayer.clearLayers();
+
+    db.forEach(u => {
+      const base = AREA_COORDS[u.area];
+      if (!base) return;
+      const lat = base[0] + seededOffset(u.id) * 0.012;
+      const lng = base[1] + seededOffset(u.id + 500) * 0.012;
+
+      const icon = L.divIcon({
+        className: "",
+        html: `<div class="map-pin" style="background:${ROLE_HEX[u.role]};"><span>${initials(u.name)}</span></div>`,
+        iconSize: [30, 30],
+        iconAnchor: [15, 28],
+        popupAnchor: [0, -26]
+      });
+
+      const marker = L.marker([lat, lng], { icon }).addTo(pinLayer);
+      marker.bindPopup(`
+        <div class="popup-name">${u.name}</div>
+        <div class="popup-meta">${u.role}${u.vehicle ? " · " + VEHICLE_ICON[u.vehicle] + " " + u.vehicle : ""} · ${u.area}<br>${u.slot} · ${u.gender}</div>
+        <a href="${waLink(u, "A fellow SZABIST student")}" target="_blank" rel="noopener" class="btn btn-wa" style="display:inline-block;">💬 WhatsApp</a>
+      `);
+    });
+  }
+
+  // ===================== RENDER: MATCHES =====================
+  function renderMatches(matches, requester) {
+    const container = document.getElementById("matchesContainer");
+    const countEl = document.getElementById("matchCount");
+    countEl.textContent = `${matches.length} match${matches.length === 1 ? "" : "es"}`;
+
+    if (!requester) {
+      container.innerHTML = `<div class="empty-box">Post your profile on the left to see live matches here.</div>`;
+      return;
+    }
+
+    if (matches.length === 0) {
+      container.innerHTML = `
+        <div class="empty-box">
+          <div>No matches yet for <strong>${requester.area}</strong> · ${requester.slot}${requester.womenOnly ? " · women-only" : ""}.</div>
+          <div class="mt-1" style="font-size:.75rem;">You're now visible on the map — you'll show up for the next matching student.</div>
+        </div>`;
+      return;
+    }
+
+    container.innerHTML = matches.map((m) => `
+      <div class="match-card">
+        <div class="d-flex align-items-center gap-3" style="min-width:0;">
+          <div class="node-avatar ${ROLE_CLASS[m.role]}" style="width:42px;height:42px;border-radius:12px;font-size:.8rem;">
+            ${initials(m.name)}
+          </div>
+          <div style="min-width:0;">
+            <div class="match-name text-truncate">${m.name}</div>
+            <div class="match-meta text-truncate">${m.role}${m.vehicle ? " · " + VEHICLE_ICON[m.vehicle] + " " + m.vehicle : ""} · ${m.area} · ${m.slot}</div>
+            <div class="match-meta">${m.gender}${requester.womenOnly ? " · women-only verified" : ""}</div>
+          </div>
+        </div>
+        <a href="${waLink(m, requester.name)}" target="_blank" rel="noopener" class="btn btn-wa">
+          💬 WhatsApp
+        </a>
+      </div>
+    `).join("");
+  }
+
+  // ===================== ROLE CHIP SELECTION =====================
+  let selectedRole = null;
+  let selectedVehicle = null;
+  const vehicleWrap = document.getElementById("vehicleWrap");
+
+  document.querySelectorAll("#roleChips .role-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("#roleChips .role-chip").forEach(b => b.dataset.active = "false");
+      btn.dataset.active = "true";
+      selectedRole = btn.dataset.role;
+      document.getElementById("roleError").classList.add("d-none");
+
+      if (selectedRole === "Driver") {
+        vehicleWrap.classList.remove("d-none");
+      } else {
+        vehicleWrap.classList.add("d-none");
+        selectedVehicle = null;
+        document.querySelectorAll("[data-vehicle]").forEach(b => b.dataset.active = "false");
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-vehicle]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-vehicle]").forEach(b => b.dataset.active = "false");
+      btn.dataset.active = "true";
+      selectedVehicle = btn.dataset.vehicle;
+      document.getElementById("vehicleError").classList.add("d-none");
+    });
+  });
+
+  // ===================== VALIDATION =====================
+  function validEmail(v) { return /^[a-zA-Z0-9._%+-]+@szabist\.pk$/i.test(v.trim()); }
+  function validPhone(v) {
+    const digits = v.replace(/[\s-]/g, "");
+    return /^(03\d{9}|923\d{9})$/.test(digits);
+  }
+  function normalizePhone(v) {
+    let d = v.replace(/[\s-]/g, "");
+    if (d.startsWith("03")) d = "92" + d.slice(1);
+    return d;
+  }
+
+  // ===================== FORM SUBMIT =====================
+  const form = document.getElementById("rideForm");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("fullName").value.trim();
+    const phoneRaw = document.getElementById("whatsapp").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const area = document.getElementById("area").value;
+    const gender = document.getElementById("gender").value;
+    const slot = document.getElementById("slot").value;
+    const womenOnly = document.getElementById("womenOnly").checked;
+
+    let ok = true;
+    document.getElementById("emailError").classList.add("d-none");
+    document.getElementById("phoneError").classList.add("d-none");
+    document.getElementById("roleError").classList.add("d-none");
+    document.getElementById("vehicleError").classList.add("d-none");
+
+    if (!validEmail(email)) { document.getElementById("emailError").classList.remove("d-none"); ok = false; }
+    if (!validPhone(phoneRaw)) { document.getElementById("phoneError").classList.remove("d-none"); ok = false; }
+    if (!selectedRole) { document.getElementById("roleError").classList.remove("d-none"); ok = false; }
+    if (selectedRole === "Driver" && !selectedVehicle) {
+      document.getElementById("vehicleError").classList.remove("d-none");
+      ok = false;
+    }
+
+    const status = document.getElementById("formStatus");
+    if (!name || !area || !gender || !slot) {
+      ok = false;
+      status.textContent = "Please complete every field.";
+      status.classList.remove("d-none");
+      status.style.color = "#E5484D";
+    }
+    if (!ok) return;
+
+    const newUser = {
+      id: nextId++, name, phone: normalizePhone(phoneRaw), email,
+      role: selectedRole, vehicle: selectedRole === "Driver" ? selectedVehicle : null,
+      area, gender, slot, womenOnly
+    };
+
+    // ---- CORE MATCHING ENGINE ----
+    const matches = findMatches(newUser);
+    db.push(newUser);
+
+    renderStats();
+    renderMap();
+    renderMatches(matches, newUser);
+
+    status.textContent = `Profile posted. You're live on the map in ${area} for ${slot}.`;
+    status.classList.remove("d-none");
+    status.style.color = "#2FAE60";
+
+    form.reset();
+    document.querySelectorAll("#roleChips .role-chip, [data-vehicle]").forEach(b => b.dataset.active = "false");
+    vehicleWrap.classList.add("d-none");
+    selectedRole = null;
+    selectedVehicle = null;
+
+    document.getElementById("matchesContainer").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+
+  // ===================== INIT =====================
+  renderStats();
+  renderMap();
+  renderMatches([], null);
+})();
+</script>
+</body>
+</html>
