@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,7 +12,6 @@
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
 <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js"></script>
 
@@ -28,7 +26,6 @@
     --wa-green: #25D366;
   }
 
-  /* --- CLEAN TYPOGRAPHY SYSTEM --- */
   * { 
     box-sizing: border-box;
     font-family: 'Inter', -apple-system, sans-serif; 
@@ -58,10 +55,6 @@
     margin-left: 8px;
   }
 
-  .text-left { text-align: left; }
-  .text-center { text-align: center; }
-  .text-justify { text-align: justify; }
-
   .highlight {
     background-color: var(--highlight-bg);
     padding: 2px 6px;
@@ -76,21 +69,11 @@
     background: var(--bg-light);
     border-radius: 0 12px 12px 0;
   }
-  .clean-blockquote p {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 4px;
-    letter-spacing: -0.01em;
-  }
-  .clean-blockquote cite {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-style: normal;
-    color: var(--muted);
-  }
 
-  /* --- APP WRAPPERS --- */
+  /* APP VIEW CONTROLLERS */
+  .app-view { display: none; }
+  .app-view.active-view { display: block; }
+
   .navbar-brandbar { 
     background: #FFFFFF; 
     border-bottom: 1px solid var(--border-color); 
@@ -102,6 +85,8 @@
     border-radius: 14px;
     background: #FFFFFF;
     padding: 30px;
+    max-width: 550px;
+    margin: 40px auto;
   }
 
   label.field-label { 
@@ -169,8 +154,8 @@
   }
   .btn-wa:hover { background: var(--wa-green); color: #FFFFFF; }
 
-  .map-wrap { border-radius: 12px; padding: 4px; border: 1px solid var(--border-color); background: #FFFFFF; }
-  #mapCanvas { width: 100%; height: 400px; border-radius: 8px; z-index: 0; }
+  .map-wrap { border-radius: 12px; padding: 4px; border: 1px solid var(--border-color); background: #FFFFFF; margin-bottom: 24px; }
+  #mapCanvas { width: 100%; height: 450px; border-radius: 8px; z-index: 0; }
   .leaflet-routing-container { display: none !important; }
 
   .match-card { 
@@ -182,36 +167,14 @@
     align-items: center; 
     justify-content: space-between; 
     gap: 16px; 
+    margin-bottom: 12px;
   }
   
   .empty-box { border: 1px dashed var(--border-color); border-radius: 12px; padding: 40px 20px; text-align: center; color: var(--muted); }
-  .invalid-msg { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #D9383A; margin-top: 4px; }
-  
-  /* OVERLAY GATEWAY */
-  #authGateway { position: fixed; inset: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-  .auth-card { width: 100%; max-width: 400px; padding: 20px; }
+  .invalid-msg { font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #D9383A; margin-top: 12px; }
 </style>
 </head>
 <body>
-
-<div id="authGateway">
-  <div class="auth-card text-center">
-    <h1 class="mb-1">SZABIST Carpool <span class="subtitle-tag">Network Node</span></h1>
-    <p class="text-muted small mb-4">Authenticate instantly using your active student identity string.</p>
-
-    <button id="googleAuthBtn" type="button" class="btn btn-action w-100 d-flex align-items-center justify-content-center gap-2 py-3">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
-        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-      </svg>
-      Continue with Google Account
-    </button>
-    
-    <div id="domainError" class="invalid-msg d-none mt-3">Access Denied: You must sign in using a verified @szabist.pk account profile.</div>
-  </div>
-</div>
 
 <div class="navbar-brandbar">
   <div class="container d-flex align-items-center justify-content-between">
@@ -219,145 +182,166 @@
       <h1 class="h4 mb-0" style="letter-spacing:-0.03em;">SZABIST Carpool <span class="subtitle-tag">Karachi Campus Node</span></h1>
     </div>
     <div class="text-end font-mono small text-muted" id="userBadge">
-      Session Status: Unauthorized
+      Session Status: Disconnected
     </div>
   </div>
 </div>
 
-<div class="container py-5">
+<div class="container">
   
-  <div class="clean-blockquote">
-    <p>"Find your purpose and then act on it and never ever give up."</p>
-    <cite>Quote of the Day — Campus Network Strategy</cite>
+  <div id="viewPage1" class="app-view active-view">
+    <div class="card-clean text-center" style="margin-top: 80px;">
+      <h1 class="mb-2">Campus Security Verification</h1>
+      <p class="text-muted small mb-4">Authentication requires an active university account profile identity string.</p>
+
+      <button id="googleAuthBtn" type="button" class="btn btn-action w-100 d-flex align-items-center justify-content-center gap-2 py-3">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+          <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+          <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
+          <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        </svg>
+        Continue with Google Account
+      </button>
+      
+      <div id="domainError" class="invalid-msg d-none">Access Denied: You must sign in using a verified @szabist.pk account profile.</div>
+    </div>
   </div>
 
-  <div class="row g-4 mt-2">
-    <div class="col-lg-5">
-      <div class="card-clean">
-        <h2 class="h5 mb-1">Create your ride profile</h2>
-        <p class="text-muted small mb-4">Post matching spatial coordinate nodes onto the live system maps.</p>
+  <div id="viewPage2" class="app-view">
+    <div class="card-clean">
+      <h2 class="h4 mb-1">Create your ride profile</h2>
+      <p class="text-muted small mb-4">Provide parameters to establish direct routing alignment matching points.</p>
 
-        <form id="rideForm" novalidate>
-          <div class="mb-3">
-            <label class="field-label">Full name</label>
-            <input id="fullName" type="text" class="form-control" placeholder="Enter full name" required>
+      <form id="rideForm" novalidate>
+        <div class="mb-3">
+          <label class="field-label">Full name</label>
+          <input id="fullName" type="text" class="form-control" placeholder="Enter full name" required>
+        </div>
+
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="field-label">WhatsApp number</label>
+            <input id="whatsapp" type="tel" class="form-control" placeholder="e.g. 923001234567" required>
           </div>
-
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <label class="field-label">WhatsApp number</label>
-              <input id="whatsapp" type="tel" class="form-control" placeholder="e.g. 923001234567" required>
-            </div>
-            <div class="col-6">
-              <label class="field-label">Gender</label>
-              <select id="gender" class="form-select" required>
-                <option value="" disabled selected>Select</option>
-                <option>Female</option>
-                <option>Male</option>
-              </select>
-            </div>
+          <div class="col-6">
+            <label class="field-label">Gender</label>
+            <select id="gender" class="form-select" required>
+              <option value="" disabled selected>Select</option>
+              <option>Female</option>
+              <option>Male</option>
+            </select>
           </div>
+        </div>
 
-          <div class="mb-3">
-            <label class="field-label">Commute Status Role</label>
-            <div class="row g-2" id="roleChips">
-              <div class="col-6"><div class="role-chip" data-role="Driver" data-active="false">🚗 Driver</div></div>
-              <div class="col-6"><div class="role-chip" data-role="Passenger" data-active="false">🎒 Passenger</div></div>
-            </div>
+        <div class="mb-3">
+          <label class="field-label">Commute Status Role</label>
+          <div class="row g-2" id="roleChips">
+            <div class="col-6"><div class="role-chip" data-role="Driver" data-active="false">🚗 Driver</div></div>
+            <div class="col-6"><div class="role-chip" data-role="Passenger" data-active="false">🎒 Passenger</div></div>
           </div>
+        </div>
 
-          <div class="mb-3 d-none" id="vehicleWrap">
-            <label class="field-label">Vehicle Category</label>
-            <div class="row g-2">
-              <div class="col-6"><div class="role-chip" data-vehicle="Car" data-active="false">🚗 Car</div></div>
-              <div class="col-6"><div class="role-chip" data-vehicle="Bike" data-active="false">🏍️ Bike</div></div>
-            </div>
+        <div class="mb-3 d-none" id="vehicleWrap">
+          <label class="field-label">Vehicle Category</label>
+          <div class="row g-2">
+            <div class="col-6"><div class="role-chip" data-vehicle="Car" data-active="false">🚗 Car</div></div>
+            <div class="col-6"><div class="role-chip" data-vehicle="Bike" data-active="false">🏍️ Bike</div></div>
           </div>
+        </div>
 
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <label class="field-label">Pickup Hub Area</label>
-              <select id="area" class="form-select" required>
-                <option value="" disabled selected>Select</option>
-                <option>Gulshan</option>
-                <option>Nazimabad</option>
-                <option>DHA</option>
-                <option>Clifton</option>
-                <option>Johar</option>
-                <option>North Nazimabad</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label class="field-label">Target Campus Point</label>
-              <select id="destination" class="form-select" required>
-                <option value="" disabled selected>Select</option>
-                <option>90 Clifton</option>
-                <option>100 Clifton</option>
-                <option>154 Elahi Kot</option>
-              </select>
-            </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="field-label">Pickup Hub Area</label>
+            <select id="area" class="form-select" required>
+              <option value="" disabled selected>Select</option>
+              <option>Gulshan</option>
+              <option>Nazimabad</option>
+              <option>DHA</option>
+              <option>Clifton</option>
+              <option>Johar</option>
+              <option>North Nazimabad</option>
+            </select>
           </div>
-
-          <div class="row g-3 mb-3">
-            <div class="col-6">
-              <label class="field-label">Travel Path Direction</label>
-              <select id="direction" class="form-select" required>
-                <option value="To Campus">Heading To Uni 🎒</option>
-                <option value="From Campus">Going Back Home 🏠</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label class="field-label">Target Class Time Block</label>
-              <select id="slot" class="form-select" required>
-                <option value="" disabled selected>Select slot</option>
-                <option>8:30 AM - 11:30 AM</option>
-                <option>11:30 AM - 2:30 PM</option>
-                <option>2:30 PM - 5:30 PM</option>
-                <option>5:30 PM - 8:30 PM</option>
-              </select>
-            </div>
+          <div class="col-6">
+            <label class="field-label">Target Campus Point</label>
+            <select id="destination" class="form-select" required>
+              <option value="" disabled selected>Select</option>
+              <option>90 Clifton</option>
+              <option>100 Clifton</option>
+              <option>154 Elahi Kot</option>
+            </select>
           </div>
+        </div>
 
-          <div class="d-flex align-items-center justify-content-between p-3 mb-4" style="background:var(--bg-light); border-radius:8px; border:1px solid var(--border-color);">
-            <div>
-              <div class="fw-semibold" style="font-size:0.85rem;">Women-only matching</div>
-              <div class="text-muted" style="font-size:0.72rem;">Strict filtering for verified female users</div>
-            </div>
-            <div class="form-check form-switch mb-0">
-              <input class="form-check-input" type="checkbox" id="womenOnly" role="switch">
-            </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="field-label">Travel Path Direction</label>
+            <select id="direction" class="form-select" required>
+              <option value="To Campus">Heading To Uni 🎒</option>
+              <option value="From Campus">Going Back Home 🏠</option>
+            </select>
           </div>
+          <div class="col-6">
+            <label class="field-label">Target Class Time Block</label>
+            <select id="slot" class="form-select" required>
+              <option value="" disabled selected>Select slot</option>
+              <option>8:30 AM - 11:30 AM</option>
+              <option>11:30 AM - 2:30 PM</option>
+              <option>2:30 PM - 5:30 PM</option>
+              <option>5:30 PM - 8:30 PM</option>
+            </select>
+          </div>
+        </div>
 
-          <button type="submit" class="btn btn-action w-100">Post & Synchronize Routes →</button>
-        </form>
-      </div>
+        <div class="d-flex align-items-center justify-content-between p-3 mb-4" style="background:var(--bg-light); border-radius:8px; border:1px solid var(--border-color);">
+          <div>
+            <div class="fw-semibold" style="font-size:0.85rem;">Women-only matching</div>
+            <div class="text-muted" style="font-size:0.72rem;">Strict filtering for verified female users</div>
+          </div>
+          <div class="form-check form-switch mb-0">
+            <input class="form-check-input" type="checkbox" id="womenOnly" role="switch">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-action w-100">Save Profiles & Plot Map Trajectories →</button>
+      </form>
     </div>
+  </div>
 
-    <div class="col-lg-7">
-      <div class="card-clean mb-4">
-        <h2 class="h5 mb-1">Live Network Trajectories</h2>
-        <p class="text-muted small mb-3">Continuous spatial pathing tracking over Karachi road layouts.</p>
-        <div class="map-wrap">
+  <div id="viewPage3" class="app-view">
+    <div class="row g-4 mt-2">
+      <div class="col-lg-7">
+        <div class="map-wrap" style="border: 1px solid var(--border-color); padding: 10px; border-radius: 14px;">
+          <h2 class="h5 mb-1 px-2 pt-2">Live Network Trajectories</h2>
+          <p class="text-muted small mb-3 px-2">Continuous live routing coordinate tracking over Karachi infrastructure.</p>
           <div id="mapCanvas"></div>
         </div>
       </div>
 
-      <div class="card-clean">
-        <h2 class="h5 mb-1">Available Route Fits</h2>
-        <p class="text-muted small mb-3">Matches matching your target sector paths.</p>
-        <div id="matchesContainer" class="d-flex flex-column gap-2">
-          <div class="empty-box font-mono">System standby. Authentication validation required.</div>
+      <div class="col-lg-5">
+        <div style="border: 1px solid var(--border-color); padding: 24px; border-radius: 14px; background: #FFF;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h5 mb-0">Available Route Fits</h2>
+            <button id="editRouteBtn" class="btn btn-light btn-sm font-mono" style="border:1px solid var(--border-color)">✏️ Edit Route</button>
+          </div>
+          <p class="text-muted small mb-3">Active live students currently matching your destination pathways.</p>
+          
+          <div id="matchesContainer">
+            <div class="empty-box font-mono">Querying real-time sector overlaps...</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
 (function () {
   "use strict";
 
-  // --- INITIALIZE REAL SUPABASE CONNECTION ENGINE ---
+  // --- DATABASE SYNC ENGINE STRINGS ---
   const SUPABASE_URL = "https://zoyebsnnpappamusnlhk.supabase.co"; 
   const SUPABASE_ANON_KEY = "sb_publishable_NjW5i-x0xd1-h1Thj8NJaA_S7FodM8k"; 
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -366,45 +350,53 @@
   let activeUserProfile = null;
   let selectedRole = null;
   let selectedVehicle = null;
+  let leafletMap = null;
+  let routeLayers = null;
+  let activeRoutingControls = [];
 
-  // --- GOOGLE SIGN-IN INTERACTION TRIGGER ---
+  // --- RECONCILE APP PAGE VIEWS ---
+  function switchPageTo(pageNumber) {
+    document.querySelectorAll('.app-view').forEach(view => view.classList.remove('active-view'));
+    document.getElementById(`viewPage${pageNumber}`).classList.add('active-view');
+    
+    // Lazy load spatial mapping architecture frame when Page 3 loads
+    if (pageNumber === 3) {
+      setTimeout(() => { initializeSpatialTrackingMap(); }, 100);
+    }
+  }
+
+  // --- INTERACTION HOOK: INITIAL AUTH SIGN IN ---
   document.getElementById("googleAuthBtn").addEventListener("click", async () => {
     const { data, error } = await supabaseClient.auth.signInWithOAuth({
       provider: 'google',
-      options: {
-        redirectTo: window.location.href
-      }
+      options: { redirectTo: window.location.href }
     });
-
-    if (error) {
-      alert("Google Authentication Engine Fault: " + error.message);
-    }
+    if (error) alert("Google Integration Error: " + error.message);
   });
 
-  // --- CHECK SESSION ON SITE LOAD ---
-  async function checkUserSessionOnLoad() {
+  // --- IDENTIFICATION ROUTER VERIFICATION ---
+  async function verifyCampusIdentitySession() {
     const { data: { session } } = await supabaseClient.auth.getSession();
 
     if (session && session.user) {
       const email = session.user.email;
 
-      // CAMPUS SECURITY: Only allow @szabist.pk emails
+      // RIGID SECURITY BARRIER: ONLY CAMPUS STRINGS ALLOWED
       if (!/^[a-zA-Z0-9._%+-]+@szabist\.pk$/i.test(email)) {
         document.getElementById("domainError").classList.remove("d-none");
         await supabaseClient.auth.signOut();
         return;
       }
 
-      // Fetch profile data row from database
       let { data: profile } = await supabaseClient
         .from('profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
-      // If it's a first-time user, automatically seed a starting database record row for them
       if (!profile) {
-        const { data: newProfile, error: insErr } = await supabaseClient
+        // Auto seed profile row if first entry sequence
+        const { data: newProfile } = await supabaseClient
           .from('profiles')
           .insert([{
             id: session.user.id,
@@ -420,15 +412,12 @@
           }])
           .select()
           .single();
-          
         profile = newProfile;
       }
 
       activeUserSession = session.user;
       activeUserProfile = profile;
 
-      // Remove the gateway block overlay and fill out inputs
-      document.getElementById("authGateway").style.display = "none";
       document.getElementById("fullName").value = profile.full_name || "";
       document.getElementById("whatsapp").value = profile.whatsapp_number || "";
       document.getElementById("gender").value = profile.gender || "Male";
@@ -437,9 +426,8 @@
       document.getElementById("direction").value = profile.travel_direction || "To Campus";
       document.getElementById("slot").value = profile.time_slot || "";
       document.getElementById("womenOnly").checked = !!profile.women_only;
-      document.getElementById("userBadge").innerHTML = `Active Session: <span class="highlight">${email}</span>`;
-      
-      // Auto-activate UI chips from profile data
+      document.getElementById("userBadge").innerHTML = `Session ID: <span class="highlight">${email}</span>`;
+
       if (profile.user_role) {
         selectedRole = profile.user_role;
         const targetChip = document.querySelector(`#roleChips [data-role="${selectedRole}"]`);
@@ -452,81 +440,88 @@
         const targetVehicle = document.querySelector(`[data-vehicle="${selectedVehicle}"]`);
         if (targetVehicle) targetVehicle.dataset.active = "true";
       }
-      
-      fetchAndRenderLiveMatches();
+
+      // Route completely past authentication layout directly into Profile Entry Panel
+      switchPageTo(2);
     }
   }
 
-  // Execute session checker check on boot up
-  checkUserSessionOnLoad();
+  verifyCampusIdentitySession();
 
+  // --- HARD SPATIAL SPHERE COORDINATES HUB ---
   const CAMPUS_COORDS = { "90 Clifton": [24.8140, 67.0295], "100 Clifton": [24.8115, 67.0320], "154 Elahi Kot": [24.8258, 67.0392] };
   const AREA_COORDS = { "North Nazimabad": [24.9372, 67.0379], "Nazimabad": [24.9088, 67.0342], "Gulshan": [24.9200, 67.0980], "Johar": [24.9095, 67.1274], "Clifton": [24.8138, 67.0300], "DHA": [24.8000, 67.0650] };
 
-  function computeDistanceKM(p1, p2) {
-    const R = 6371;
-    const dLat = (p2[0]-p1[0]) * Math.PI / 180;
-    const dLon = (p2[1]-p1[1]) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(p1[0]*Math.PI/180) * Math.cos(p2[0]*Math.PI/180) * Math.sin(dLon/2) * Math.sin(dLon/2);
-    return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)));
+  function calculateDistanceMetrics(pos1, pos2) {
+    const radius = 6371;
+    const deltaLat = (pos2[0]-pos1[0]) * Math.PI / 180;
+    const deltaLon = (pos2[1]-pos1[1]) * Math.PI / 180;
+    const computedArc = Math.sin(deltaLat/2) * Math.sin(deltaLat/2) + Math.cos(pos1[0]*Math.PI/180) * Math.cos(pos2[0]*Math.PI/180) * Math.sin(deltaLon/2) * Math.sin(deltaLon/2);
+    return radius * (2 * Math.atan2(Math.sqrt(computedArc), Math.sqrt(1-computedArc)));
   }
 
-  function getCostSplit(area, campus, vehicle) {
-    const start = AREA_COORDS[area] || [24.878, 67.045];
-    const end = CAMPUS_COORDS[campus] || [24.814, 67.029];
-    const distance = computeDistanceKM(start, end);
-    const cost = vehicle === "Bike" ? Math.round(distance * 12) : Math.round(distance * 32);
-    return `Split: <span class="highlight">PKR ${cost} - ${cost + 60}</span>`;
+  function resolveCostSplits(area, uni, transport) {
+    const origin = AREA_COORDS[area] || [24.878, 67.045];
+    const destination = CAMPUS_COORDS[uni] || [24.814, 67.029];
+    const range = calculateDistanceMetrics(origin, destination);
+    const fare = transport === "Bike" ? Math.round(range * 12) : Math.round(range * 32);
+    return `Split Cost: <span class="highlight">PKR ${fare} - ${fare + 50}</span>`;
   }
 
-  // Map Setup
-  const leafletMap = L.map("mapCanvas", { scrollWheelZoom: false }).setView([24.865, 67.055], 11);
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
-  }).addTo(leafletMap);
+  // --- INJECT REAL MAP LAYERS ---
+  function initializeSpatialTrackingMap() {
+    if (leafletMap) return; 
 
-  const routeLayers = L.layerGroup().addTo(leafletMap);
-  let activeRoutingControls = [];
+    leafletMap = L.map("mapCanvas", { scrollWheelZoom: false }).setView([24.865, 67.055], 11);
+    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+    }).addTo(leafletMap);
 
-  function drawRoutesOnMap(user, currentMatches) {
+    routeLayers = L.layerGroup().addTo(leafletMap);
+    renderLiveMatchesAndPaths();
+  }
+
+  // --- DRAW REAL TIMELINES AND CALCULATE PATH OVERLAPS ---
+  function drawSpatialRoutes(player, matchingNodes) {
     activeRoutingControls.forEach(control => leafletMap.removeControl(control));
     activeRoutingControls = [];
     routeLayers.clearLayers();
 
-    const homeLoc = AREA_COORDS[user.pickup_area];
-    const targetUni = CAMPUS_COORDS[user.destination_campus];
+    const homePoint = AREA_COORDS[player.pickup_area];
+    const campusPoint = CAMPUS_COORDS[player.destination_campus];
     
-    if (homeLoc && targetUni) {
-      const playerRoute = L.Routing.control({
-        waypoints: [L.latLng(homeLoc[0], homeLoc[1]), L.latLng(targetUni[0], targetUni[1])],
+    if (homePoint && campusPoint) {
+      const activeUserRoute = L.Routing.control({
+        waypoints: [L.latLng(homePoint[0], homePoint[1]), L.latLng(campusPoint[0], campusPoint[1])],
         router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
         lineOptions: { styles: [{ color: '#111111', weight: 5, opacity: 0.9 }] },
         createMarker: function() { return null; },
         show: false
       }).addTo(leafletMap);
       
-      activeRoutingControls.push(playerRoute);
-      L.circleMarker(homeLoc, {radius: 6, color: '#111111', fillColor: '#fff', fillOpacity: 1, weight: 2}).addTo(routeLayers);
-      L.circleMarker(targetUni, {radius: 6, color: '#111111', fillColor: '#111111', fillOpacity: 1}).addTo(routeLayers);
+      activeRoutingControls.push(activeUserRoute);
+      L.circleMarker(homePoint, {radius: 7, color: '#111111', fillColor: '#fff', fillOpacity: 1, weight: 3}).addTo(routeLayers).bindPopup("Your Location Node");
+      L.circleMarker(campusPoint, {radius: 7, color: '#111111', fillColor: '#111111', fillOpacity: 1}).addTo(routeLayers).bindPopup("Target SZABIST Node");
     }
 
-    currentMatches.forEach(m => {
-      const matchHome = AREA_COORDS[m.pickup_area];
-      if (matchHome) {
-        const matchRoute = L.Routing.control({
-          waypoints: [L.latLng(matchHome[0], matchHome[1]), L.latLng(targetUni[0], targetUni[1])],
+    matchingNodes.forEach(match => {
+      const peerPoint = AREA_COORDS[match.pickup_area];
+      if (peerPoint) {
+        const peerRoute = L.Routing.control({
+          waypoints: [L.latLng(peerPoint[0], peerPoint[1]), L.latLng(campusPoint[0], campusPoint[1])],
           router: L.Routing.osrmv1({ serviceUrl: 'https://router.project-osrm.org/route/v1' }),
-          lineOptions: { styles: [{ color: '#999999', weight: 3, opacity: 0.7, dashArray: '4, 8' }] },
+          lineOptions: { styles: [{ color: '#4A4AF4', weight: 3, opacity: 0.8, dashArray: '5, 8' }] },
           createMarker: function() { return null; },
           show: false
         }).addTo(leafletMap);
-        activeRoutingControls.push(matchRoute);
+        activeRoutingControls.push(peerRoute);
+        L.circleMarker(peerPoint, {radius: 5, color: '#4A4AF4', fillColor: '#fff', fillOpacity: 1, weight: 2}).addTo(routeLayers).bindPopup(`${match.full_name} (${match.user_role})`);
       }
     });
   }
 
-  // --- QUERY MATCHES FROM SUPABASE ---
-  async function fetchAndRenderLiveMatches() {
+  // --- QUERY REAL CORRESPONDENCE MATRICES FROM SUPABASE ---
+  async function renderLiveMatchesAndPaths() {
     if (!activeUserProfile) return;
 
     let query = supabaseClient
@@ -547,35 +542,35 @@
     const container = document.getElementById("matchesContainer");
 
     if (error) {
-      container.innerHTML = `<div class="empty-box font-mono">Database Network Error: ${error.message}</div>`;
+      container.innerHTML = `<div class="empty-box font-mono">Real-time Node Query Failure: ${error.message}</div>`;
       return;
     }
 
     if (!matches || matches.length === 0) {
-      container.innerHTML = `<div class="empty-box font-mono">No direct route overlaps found yet for this segment.</div>`;
-      drawRoutesOnMap(activeUserProfile, []);
+      container.innerHTML = `<div class="empty-box font-mono">No direct matching route paths found at this current block.</div>`;
+      if (leafletMap) drawSpatialRoutes(activeUserProfile, []);
       return;
     }
 
     container.innerHTML = matches.map(m => {
-      const estimatedPriceRange = getCostSplit(m.pickup_area, m.destination_campus, m.vehicle_type || 'Car');
-      const sterilePhone = m.whatsapp_number ? m.whatsapp_number.replace(/\D/g, '') : '';
+      const pricingMetric = resolveCostSplits(m.pickup_area, m.destination_campus, m.vehicle_type || 'Car');
+      const standardPhone = m.whatsapp_number ? m.whatsapp_number.replace(/\D/g, '') : '';
       return `
         <div class="match-card">
           <div>
-            <div class="fw-bold text-dark">${m.full_name} (${m.user_role})</div>
+            <div class="fw-bold text-dark">${m.full_name} <span class="badge bg-secondary font-mono small">${m.user_role}</span></div>
             <div class="small text-muted font-mono mt-1">${m.pickup_area} ➔ ${m.destination_campus}</div>
-            <div class="small font-mono mt-2">${estimatedPriceRange}</div>
+            <div class="small font-mono mt-2">${pricingMetric}</div>
           </div>
-          <a href="https://wa.me/${sterilePhone}" target="_blank" class="btn btn-wa font-mono">CONNECT</a>
+          <a href="https://wa.me/${standardPhone}" target="_blank" class="btn btn-wa font-mono">CONNECT</a>
         </div>
       `;
     }).join("");
 
-    drawRoutesOnMap(activeUserProfile, matches);
+    if (leafletMap) drawSpatialRoutes(activeUserProfile, matches);
   }
 
-  // --- CHIP SELECTORS INTERACTIONS ---
+  // --- INTERACTION LISTENER CHIPS ---
   document.querySelectorAll("#roleChips .role-chip").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("#roleChips .role-chip").forEach(b => b.dataset.active = "false");
@@ -593,17 +588,21 @@
     });
   });
 
-  // --- SAVE UPDATED PARAMETERS ON SUBMIT ---
+  document.getElementById("editRouteBtn").addEventListener("click", () => {
+    switchPageTo(2);
+  });
+
+  // --- COMMIT RIDE PARAMETERS UPDATE ON SUBMIT ---
   document.getElementById("rideForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!activeUserSession) return;
     
     if (!selectedRole) {
-      alert("Please select your Commute Status Role (Driver or Passenger).");
+      alert("Please designate your current structural role (Driver or Passenger).");
       return;
     }
 
-    const updatedProfile = {
+    const compiledProfile = {
       full_name: document.getElementById("fullName").value,
       whatsapp_number: document.getElementById("whatsapp").value,
       user_role: selectedRole,
@@ -619,22 +618,26 @@
 
     const { error } = await supabaseClient
       .from('profiles')
-      .update(updatedProfile)
+      .update(compiledProfile)
       .eq('id', activeUserSession.id);
 
     if (error) {
-      alert("Error saving profile parameters: " + error.message);
+      alert("Error synchronizing profile: " + error.message);
       return;
     }
 
-    activeUserProfile = { ...activeUserProfile, ...updatedProfile };
-    alert("Routes synchronized with live network node!");
-    fetchAndRenderLiveMatches();
+    activeUserProfile = { ...activeUserProfile, ...compiledProfile };
+    
+    // Smooth navigation directly to Page 3 Map View Layout
+    switchPageTo(3);
+    
+    // Refresh the live tracking arrays
+    if (leafletMap) {
+      renderLiveMatchesAndPaths();
+    }
   });
 
 })();
 </script>
 </body>
 </html>
-
-```
