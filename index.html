@@ -1,7 +1,7 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Supabase JavaScript Library CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
 <meta charset="UTF-8" />
@@ -51,7 +51,6 @@
   .text-muted { color: var(--muted) !important; }
   .font-mono { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
 
-  /* Screenshot Typography Elements */
   .subtitle-tag {
     font-size: 0.85rem;
     color: #777777;
@@ -70,7 +69,6 @@
     font-weight: 500;
   }
 
-  /* Screenshot Elegant Quote Box */
   .clean-blockquote {
     border-left: 4px solid #111111;
     padding: 12px 20px;
@@ -106,7 +104,6 @@
     padding: 30px;
   }
 
-  /* Forms & Custom UI Buttons */
   label.field-label { 
     font-family: 'JetBrains Mono', monospace;
     text-transform: uppercase; 
@@ -193,55 +190,26 @@
   /* OVERLAY GATEWAY */
   #authGateway { position: fixed; inset: 0; background: rgba(255,255,255,0.96); backdrop-filter: blur(4px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
   .auth-card { width: 100%; max-width: 400px; padding: 20px; }
-  .auth-toggle-link { color: var(--brand-primary); text-decoration: none; font-weight: 600; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <div id="authGateway">
-  <div class="auth-card text-left">
-    <h1 class="mb-1" id="authTitle">Hello, student! <span class="subtitle-tag">Verification Portal</span></h1>
-    <p class="text-muted small mb-4" id="authSubtitle">Please sign in with your active SZABIST institutional details.</p>
+  <div class="auth-card text-center">
+    <h1 class="mb-1">SZABIST Carpool <span class="subtitle-tag">Network Node</span></h1>
+    <p class="text-muted small mb-4">Authenticate instantly using your active student identity string.</p>
 
-    <form id="loginForm">
-      <div class="mb-3">
-        <label class="field-label">Campus Email</label>
-        <input type="email" id="loginEmail" class="form-control" placeholder="yourname@szabist.pk" required>
-      </div>
-      <div class="mb-3">
-        <label class="field-label">Password</label>
-        <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
-        <div id="loginError" class="invalid-msg d-none">Error: Authentication mismatched.</div>
-      </div>
-      <button type="submit" class="btn btn-action w-100 mb-3">Secure Log In →</button>
-      <div class="small text-muted font-mono">
-        New route user? <span class="auth-toggle-link" id="switchToRegister">Register Here</span>
-      </div>
-    </form>
-
-    <form id="registerForm" class="d-none">
-      <div class="mb-2">
-        <label class="field-label">Full Name</label>
-        <input type="text" id="regName" class="form-control" placeholder="Mohriz Baloch" required>
-      </div>
-      <div class="mb-2">
-        <label class="field-label">SZABIST Email Domain</label>
-        <input type="email" id="regEmail" class="form-control" placeholder="username@szabist.pk" required>
-        <div id="regEmailError" class="invalid-msg d-none">Error: Required institutional domain constraint.</div>
-      </div>
-      <div class="mb-2">
-        <label class="field-label">WhatsApp Contact String</label>
-        <input type="tel" id="regPhone" class="form-control" placeholder="03001234567" required>
-      </div>
-      <div class="mb-3">
-        <label class="field-label">Access Password</label>
-        <input type="password" id="regPassword" class="form-control" placeholder="Min 6 alphanumeric keys" required>
-      </div>
-      <button type="submit" class="btn btn-action w-100 mb-3">Complete Registration ✓</button>
-      <div class="small text-muted font-mono">
-        Registered? <span class="auth-toggle-link" id="switchToLogin">Log In Instead</span>
-      </div>
-    </form>
+    <button id="googleAuthBtn" type="button" class="btn btn-action w-100 d-flex align-items-center justify-content-center gap-2 py-3">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l3.66-2.85z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.85c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google Account
+    </button>
+    
+    <div id="domainError" class="invalid-msg d-none mt-3">Access Denied: You must sign in using a verified @szabist.pk account profile.</div>
   </div>
 </div>
 
@@ -272,13 +240,13 @@
         <form id="rideForm" novalidate>
           <div class="mb-3">
             <label class="field-label">Full name</label>
-            <input id="fullName" type="text" class="form-control" required readonly>
+            <input id="fullName" type="text" class="form-control" placeholder="Enter full name" required>
           </div>
 
           <div class="row g-3 mb-3">
             <div class="col-6">
               <label class="field-label">WhatsApp number</label>
-              <input id="whatsapp" type="tel" class="form-control" required readonly>
+              <input id="whatsapp" type="tel" class="form-control" placeholder="e.g. 923001234567" required>
             </div>
             <div class="col-6">
               <label class="field-label">Gender</label>
@@ -396,118 +364,101 @@
 
   let activeUserSession = null;
   let activeUserProfile = null;
+  let selectedRole = null;
+  let selectedVehicle = null;
 
-  // VIEW CONTROL INTERACTION TOGGLES
-  document.getElementById("switchToRegister").addEventListener("click", () => {
-    document.getElementById("loginForm").classList.add("d-none");
-    document.getElementById("registerForm").classList.remove("d-none");
-    document.getElementById("authTitle").innerHTML = 'Hello, world! <span class="subtitle-tag">Registration</span>';
-  });
-
-  document.getElementById("switchToLogin").addEventListener("click", () => {
-    document.getElementById("registerForm").classList.add("d-none");
-    document.getElementById("loginForm").classList.remove("d-none");
-    document.getElementById("authTitle").innerHTML = 'Hello, world! <span class="subtitle-tag">Verification</span>';
-  });
-
-  // --- SUPABASE REAL REGISTRATION ---
-  document.getElementById("registerForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    document.getElementById("regEmailError").classList.add("d-none");
-
-    const email = document.getElementById("regEmail").value.trim();
-    const name = document.getElementById("regName").value.trim();
-    const phone = document.getElementById("regPhone").value.trim();
-    const pass = document.getElementById("regPassword").value;
-
-    if (!/^[a-zA-Z0-9._%+-]+@szabist\.pk$/i.test(email)) {
-      document.getElementById("regEmailError").classList.remove("d-none");
-      return;
-    }
-
-    // 1. Sign up the user in Supabase Auth
-    const { data: authData, error: authError } = await supabaseClient.auth.signUp({
-      email: email,
-      password: pass
-    });
-
-    if (authError) {
-      alert("Registration Error: " + authError.message);
-      return;
-    }
-
-    // 2. Insert their starting details into your public.profiles table
-    if (authData.user) {
-      const { error: profileError } = await supabaseClient
-        .from('profiles')
-        .insert([{
-          id: authData.user.id,
-          full_name: name,
-          whatsapp_number: phone,
-          gender: 'Male', // Starting default value matching database constraints
-          user_role: 'Passenger',
-          pickup_area: 'Gulshan',
-          destination_campus: '90 Clifton',
-          travel_direction: 'To Campus',
-          time_slot: '8:30 AM - 11:30 AM',
-          women_only: false
-        }]);
-
-      if (profileError) {
-        alert("Profile Setup Error: " + profileError.message);
-        return;
+  // --- GOOGLE SIGN-IN INTERACTION TRIGGER ---
+  document.getElementById("googleAuthBtn").addEventListener("click", async () => {
+    const { data, error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.href
       }
-    }
-
-    alert("Registration successful! Check your email for a verification link if required, or try logging in.");
-    document.getElementById("switchToLogin").click();
-  });
-
-  // --- SUPABASE REAL LOGIN ---
-  document.getElementById("loginForm").addEventListener("submit", async function(e) {
-    e.preventDefault();
-    document.getElementById("loginError").classList.add("d-none");
-
-    const email = document.getElementById("loginEmail").value.trim();
-    const pass = document.getElementById("loginPassword").value;
-
-    // 1. Authenticate with Supabase Auth
-    const { data, error } = await supabaseClient.auth.signInWithPassword({
-      email: email,
-      password: pass
     });
 
     if (error) {
-      document.getElementById("loginError").textContent = `Error: ${error.message}`;
-      document.getElementById("loginError").classList.remove("d-none");
-      return;
+      alert("Google Authentication Engine Fault: " + error.message);
     }
-
-    activeUserSession = data.user;
-
-    // 2. Fetch their record row data from the profiles table
-    const { data: profile, error: pError } = await supabaseClient
-      .from('profiles')
-      .select('*')
-      .eq('id', activeUserSession.id)
-      .single();
-
-    if (pError || !profile) {
-      alert("Could not load your ride profile details.");
-      return;
-    }
-
-    activeUserProfile = profile;
-
-    // Hide Gateway & Hydrate Form UI fields
-    document.getElementById("authGateway").style.display = "none";
-    document.getElementById("fullName").value = profile.full_name;
-    document.getElementById("whatsapp").value = profile.whatsapp_number;
-    document.getElementById("userBadge").innerHTML = `Session token: <span class="highlight">${activeUserSession.email}</span>`;
-    
-    // Trigger initial matches pull
-    fetchAndRenderLiveMatches();
   });
+
+  // --- CHECK SESSION ON SITE LOAD ---
+  async function checkUserSessionOnLoad() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (session && session.user) {
+      const email = session.user.email;
+
+      // CAMPUS SECURITY: Only allow @szabist.pk emails
+      if (!/^[a-zA-Z0-9._%+-]+@szabist\.pk$/i.test(email)) {
+        document.getElementById("domainError").classList.remove("d-none");
+        await supabaseClient.auth.signOut();
+        return;
+      }
+
+      // Fetch profile data row from database
+      let { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      // If it's a first-time user, automatically seed a starting database record row for them
+      if (!profile) {
+        const { data: newProfile, error: insErr } = await supabaseClient
+          .from('profiles')
+          .insert([{
+            id: session.user.id,
+            full_name: session.user.user_metadata.full_name || "SZABIST Student",
+            whatsapp_number: "", 
+            gender: 'Male',
+            user_role: 'Passenger',
+            pickup_area: 'Gulshan',
+            destination_campus: '90 Clifton',
+            travel_direction: 'To Campus',
+            time_slot: '8:30 AM - 11:30 AM',
+            women_only: false
+          }])
+          .select()
+          .single();
+          
+        profile = newProfile;
+      }
+
+      activeUserSession = session.user;
+      activeUserProfile = profile;
+
+      // Remove the gateway block overlay and fill out inputs
+      document.getElementById("authGateway").style.display = "none";
+      document.getElementById("fullName").value = profile.full_name || "";
+      document.getElementById("whatsapp").value = profile.whatsapp_number || "";
+      document.getElementById("gender").value = profile.gender || "Male";
+      document.getElementById("area").value = profile.pickup_area || "Gulshan";
+      document.getElementById("destination").value = profile.destination_campus || "90 Clifton";
+      document.getElementById("direction").value = profile.travel_direction || "To Campus";
+      document.getElementById("slot").value = profile.time_slot || "";
+      document.getElementById("womenOnly").checked = !!profile.women_only;
+      document.getElementById("userBadge").innerHTML = `Active Session: <span class="highlight">${email}</span>`;
+      
+      // Auto-activate UI chips from profile data
+      if (profile.user_role) {
+        selectedRole = profile.user_role;
+        const targetChip = document.querySelector(`#roleChips [data-role="${selectedRole}"]`);
+        if (targetChip) targetChip.dataset.active = "true";
+        document.getElementById("vehicleWrap").classList.toggle("d-none", selectedRole !== "Driver");
+      }
+      
+      if (profile.vehicle_type) {
+        selectedVehicle = profile.vehicle_type;
+        const targetVehicle = document.querySelector(`[data-vehicle="${selectedVehicle}"]`);
+        if (targetVehicle) targetVehicle.dataset.active = "true";
+      }
+      
+      fetchAndRenderLiveMatches();
+    }
+  }
+
+  // Execute session checker check on boot up
+  checkUserSessionOnLoad();
 
   const CAMPUS_COORDS = { "90 Clifton": [24.8140, 67.0295], "100 Clifton": [24.8115, 67.0320], "154 Elahi Kot": [24.8258, 67.0392] };
   const AREA_COORDS = { "North Nazimabad": [24.9372, 67.0379], "Nazimabad": [24.9088, 67.0342], "Gulshan": [24.9200, 67.0980], "Johar": [24.9095, 67.1274], "Clifton": [24.8138, 67.0300], "DHA": [24.8000, 67.0650] };
@@ -528,7 +479,7 @@
     return `Split: <span class="highlight">PKR ${cost} - ${cost + 60}</span>`;
   }
 
-  // Init Map
+  // Map Setup
   const leafletMap = L.map("mapCanvas", { scrollWheelZoom: false }).setView([24.865, 67.055], 11);
   L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
     attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
@@ -574,7 +525,7 @@
     });
   }
 
-  // --- FETCH MATCHES FROM LIVE DATABASE ---
+  // --- QUERY MATCHES FROM SUPABASE ---
   async function fetchAndRenderLiveMatches() {
     if (!activeUserProfile) return;
 
@@ -596,7 +547,7 @@
     const container = document.getElementById("matchesContainer");
 
     if (error) {
-      container.innerHTML = `<div class="empty-box font-mono">Error querying matches: ${error.message}</div>`;
+      container.innerHTML = `<div class="empty-box font-mono">Database Network Error: ${error.message}</div>`;
       return;
     }
 
@@ -608,6 +559,7 @@
 
     container.innerHTML = matches.map(m => {
       const estimatedPriceRange = getCostSplit(m.pickup_area, m.destination_campus, m.vehicle_type || 'Car');
+      const sterilePhone = m.whatsapp_number ? m.whatsapp_number.replace(/\D/g, '') : '';
       return `
         <div class="match-card">
           <div>
@@ -615,7 +567,7 @@
             <div class="small text-muted font-mono mt-1">${m.pickup_area} ➔ ${m.destination_campus}</div>
             <div class="small font-mono mt-2">${estimatedPriceRange}</div>
           </div>
-          <a href="https://wa.me/${m.whatsapp_number}" target="_blank" class="btn btn-wa font-mono">CONNECT</a>
+          <a href="https://wa.me/${sterilePhone}" target="_blank" class="btn btn-wa font-mono">CONNECT</a>
         </div>
       `;
     }).join("");
@@ -623,7 +575,7 @@
     drawRoutesOnMap(activeUserProfile, matches);
   }
 
-  let selectedRole = null, selectedVehicle = null;
+  // --- CHIP SELECTORS INTERACTIONS ---
   document.querySelectorAll("#roleChips .role-chip").forEach(btn => {
     btn.addEventListener("click", () => {
       document.querySelectorAll("#roleChips .role-chip").forEach(b => b.dataset.active = "false");
@@ -641,14 +593,21 @@
     });
   });
 
-  // --- UPDATE PROFILE ON ROUTE UPDATE ---
+  // --- SAVE UPDATED PARAMETERS ON SUBMIT ---
   document.getElementById("rideForm").addEventListener("submit", async (e) => {
     e.preventDefault();
     if (!activeUserSession) return;
+    
+    if (!selectedRole) {
+      alert("Please select your Commute Status Role (Driver or Passenger).");
+      return;
+    }
 
     const updatedProfile = {
+      full_name: document.getElementById("fullName").value,
+      whatsapp_number: document.getElementById("whatsapp").value,
       user_role: selectedRole,
-      vehicle_type: selectedVehicle,
+      vehicle_type: selectedRole === "Driver" ? selectedVehicle : null,
       gender: document.getElementById("gender").value,
       pickup_area: document.getElementById("area").value,
       destination_campus: document.getElementById("destination").value,
@@ -664,15 +623,12 @@
       .eq('id', activeUserSession.id);
 
     if (error) {
-      alert("Error synchronizing profile: " + error.message);
+      alert("Error saving profile parameters: " + error.message);
       return;
     }
 
-    // Refresh active local tracking variable data
     activeUserProfile = { ...activeUserProfile, ...updatedProfile };
     alert("Routes synchronized with live network node!");
-    
-    // Recalculate matches against database rows
     fetchAndRenderLiveMatches();
   });
 
@@ -680,3 +636,5 @@
 </script>
 </body>
 </html>
+
+```
