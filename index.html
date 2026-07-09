@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,7 +131,7 @@
   }
   #mapCanvas{
     width: 100%;
-    height: 420px;
+    height: 420px !important; /* Force reliable element scaling across mobile grids */
     border-radius: 14px;
     z-index: 0;
   }
@@ -621,6 +620,11 @@
   renderStats();
   renderMap();
   renderMatches([], null);
+
+  // Force Leaflet engine context update once mobile browser layout engine stabilizes
+  setTimeout(() => {
+    leafletMap.invalidateSize();
+  }, 250);
 })();
 </script>
 </body>
